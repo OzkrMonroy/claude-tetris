@@ -94,7 +94,7 @@ function tryRotate() {
 function merge() {
   for (let r = 0; r < current.shape.length; r++)
     for (let c = 0; c < current.shape[r].length; c++)
-      if (current.shape[r][c])
+      if (current.shape[r][c] && current.y + r >= 0)
         board[current.y + r][current.x + c] = current.shape[r][c];
 }
 
@@ -199,6 +199,9 @@ function draw() {
     for (let c = 0; c < COLS; c++)
       drawBlock(ctx, c, r, board[r][c], BLOCK);
 
+  // en game over la pieza nueva no cabe: no superponerla al tablero
+  if (gameOver) return;
+
   // ghost
   const gy = ghostY();
   for (let r = 0; r < current.shape.length; r++)
@@ -226,6 +229,7 @@ function drawNext() {
 function endGame() {
   gameOver = true;
   cancelAnimationFrame(animId);
+  draw();
   overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
   overlay.classList.remove('hidden');
@@ -257,6 +261,8 @@ function loop(ts) {
       lockPiece();
     }
   }
+  // lockPiece() puede haber terminado la partida: no reprogramar el bucle
+  if (gameOver) return;
   draw();
   animId = requestAnimationFrame(loop);
 }
