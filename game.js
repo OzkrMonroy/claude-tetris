@@ -39,6 +39,11 @@ const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
+const themeBtn = document.getElementById('theme-toggle');
+
+const THEME_KEY = 'tetris-theme';
+const GRID_COLORS = { dark: '#22222e', light: '#e1e4ec' };
+let theme = 'dark';
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 
@@ -169,7 +174,7 @@ function drawBlock(context, x, y, colorIndex, size, alpha) {
 }
 
 function drawGrid() {
-  ctx.strokeStyle = '#22222e';
+  ctx.strokeStyle = GRID_COLORS[theme];
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -300,5 +305,25 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+
+function setTheme(t) {
+  theme = t === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = theme;
+  themeBtn.setAttribute('aria-pressed', String(theme === 'light'));
+  themeBtn.textContent = theme === 'light' ? '🌙 Oscuro' : '☀️ Claro';
+  try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  // redibujar (el bucle no corre en pausa / game over)
+  if (current) draw();
+  if (next) drawNext();
+}
+
+themeBtn.addEventListener('click', () => {
+  setTheme(theme === 'dark' ? 'light' : 'dark');
+  themeBtn.blur(); // evita que Space/Enter vuelvan a activar el botón
+});
+
+let savedTheme = 'dark';
+try { savedTheme = localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) {}
+setTheme(savedTheme);
 
 init();
