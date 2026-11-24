@@ -19,6 +19,7 @@
   --kbd-text: #aaa;
   --overlay-bg: rgba(10, 10, 20, 0.75);
   --danger: #e57373;
+  --gold: #ffd54f;
 }
 
 [data-theme="light"] {
@@ -36,6 +37,7 @@
   --kbd-text: #333;
   --overlay-bg: rgba(242, 244, 248, 0.8);
   --danger: #c62828;
+  --gold: #b8860b;
 }
 
 body {
@@ -327,4 +329,135 @@ kbd {
   display: inline-flex;
   gap: 4px;
   min-width: 80px;
+}
+
+/* ---- Tabla de récords ---- */
+#overlay-title.accent {
+  color: var(--accent);
+}
+
+.new-record {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  animation: pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 0.6; }
+  to   { opacity: 1; }
+}
+
+.hidden {
+  display: none !important;
+}
+
+.name-form {
+  display: flex;
+  gap: 6px;
+}
+
+#name-input {
+  background: var(--canvas-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
+  width: 150px;
+  user-select: text;
+}
+
+#name-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+#save-btn {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#save-btn:hover {
+  background: var(--accent-hover);
+}
+
+.records {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 260px;
+}
+
+#records-list {
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+}
+
+#records-list li {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--text);
+}
+
+#records-list li .rank { color: var(--label); }
+#records-list li .name { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#records-list li .pts  { color: var(--accent); font-weight: 700; }
+
+#records-list li.current {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+#records-list li.current .rank,
+#records-list li.current .pts {
+  color: var(--bg);
+}
+
+#records-list li.empty {
+  color: var(--muted);
+  justify-content: center;
+  display: block;
+  text-align: center;
+}
+
+.records-extra {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.records-extra strong {
+  color: var(--accent);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  color: var(--danger);
+}
+
+.value.in-top {
+  color: var(--gold);
 }
