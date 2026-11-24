@@ -41,9 +41,107 @@ const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 const themeBtn = document.getElementById('theme-toggle');
 
+const skinSelect = document.getElementById('skin-select');
+
 const THEME_KEY = 'tetris-theme';
+const SKIN_KEY = 'tetris-skin';
 const GRID_COLORS = { dark: '#22222e', light: '#e1e4ec' };
 let theme = 'dark';
+
+// ---- Skins ----
+// Cada skin define su paleta (indexada por tipo de pieza, igual que COLORS),
+// el color de la rejilla y su propia función de dibujo de bloque.
+
+// Aclara (amt > 0) u oscurece (amt < 0) un color #rrggbb.
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const f = v => Math.round(amt > 0 ? v + (255 - v) * amt : v * (1 + amt));
+  return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
+}
+
+function roundRectPath(context, x, y, w, h, r) {
+  context.beginPath();
+  context.moveTo(x + r, y);
+  context.arcTo(x + w, y, x + w, y + h, r);
+  context.arcTo(x + w, y + h, x, y + h, r);
+  context.arcTo(x, y + h, x, y, r);
+  context.arcTo(x, y, x + w, y, r);
+  context.closePath();
+}
+
+const SKINS = {
+  retro: {
+    label: 'Retro',
+    colors: COLORS,
+    grid: t => GRID_COLORS[t],
+    drawBlock(context, px, py, size, color) {
+      context.fillStyle = color;
+      context.fillRect(px + 1, py + 1, size - 2, size - 2);
+      context.fillStyle = 'rgba(255,255,255,0.12)';
+      context.fillRect(px + 1, py + 1, size - 2, 4);
+    },
+  },
+  neon: {
+    label: 'Neon',
+    colors: [null, '#00f0ff', '#fff200', '#d400ff', '#39ff14', '#ff073a', '#3d7bff', '#ff8c00'],
+    grid: () => '#111122', // fondo negro siempre, independiente del tema
+    drawBlock(context, px, py, size, color) {
+      context.save();
+      context.shadowColor = color;
+      context.shadowBlur = 14;
+      context.strokeStyle = color;
+      context.lineWidth = 2;
+      context.strokeRect(px + 3, py + 3, size - 6, size - 6);
+      context.fillStyle = color;
+      context.globalAlpha *= 0.25;
+      context.fillRect(px + 3, py + 3, size - 6, size - 6);
+      context.restore();
+    },
+  },
+  pastel: {
+    label: 'Pastel',
+    colors: [null, '#a8e6ef', '#fdf1a7', '#d9b8e8', '#b9e4c1', '#f6b6b6', '#c6dcf7', '#fdd3a8'],
+    grid: t => (t === 'light' ? '#eee6f0' : '#2a2633'),
+    drawBlock(context, px, py, size, color) {
+      const r = size * 0.22;
+      roundRectPath(context, px + 2, py + 2, size - 4, size - 4, r);
+      context.fillStyle = color;
+      context.fill();
+      context.lineWidth = 1.5;
+      context.strokeStyle = shade(color, -0.18);
+      context.stroke();
+      // brillo suave
+      roundRectPath(context, px + 5, py + 4, size - 10, size * 0.28, r * 0.6);
+      context.fillStyle = 'rgba(255,255,255,0.35)';
+      context.fill();
+    },
+  },
+  pixel: {
+    label: 'Pixel art',
+    colors: COLORS,
+    grid: t => GRID_COLORS[t],
+    drawBlock(context, px, py, size, color) {
+      const N = 6;            // subdivisión del bloque en "píxeles"
+      const p = size / N;
+      const light = shade(color, 0.45);
+      const dark = shade(color, -0.4);
+      const mid = shade(color, -0.15);
+      for (let i = 0; i < N; i++) {
+        for (let j = 0; j < N; j++) {
+          let c = color;
+          if (i === 0 || j === 0) c = light;                 // bisel superior/izq.
+          else if (i === N - 1 || j === N - 1) c = dark;     // bisel inferior/der.
+          else if ((i + j) % 3 === 0) c = mid;               // textura de tramado
+          context.fillStyle = c;
+          context.fillRect(Math.floor(px + i * p), Math.floor(py + j * p), Math.ceil(p), Math.ceil(p));
+        }
+      }
+      context.fillStyle = '#ffffff';
+      context.fillRect(Math.floor(px + p), Math.floor(py + p), Math.ceil(p), Math.ceil(p)); // brillo
+    },
+  },
+};
+let skin = SKINS.retro;
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 
@@ -163,18 +261,13 @@ function updateHUD() {
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
   context.globalAlpha = alpha ?? 1;
-  context.fillStyle = color;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  // highlight
-  context.fillStyle = 'rgba(255,255,255,0.12)';
-  context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+  skin.drawBlock(context, x * size, y * size, size, skin.colors[colorIndex]);
   context.globalAlpha = 1;
 }
 
 function drawGrid() {
-  ctx.strokeStyle = GRID_COLORS[theme];
+  ctx.strokeStyle = skin.grid(theme);
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -318,15 +411,41 @@ function setTheme(t) {
   themeBtn.setAttribute('aria-pressed', String(theme === 'light'));
   themeBtn.textContent = theme === 'light' ? '🌙 Oscuro' : '☀️ Claro';
   try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
-  // redibujar (el bucle no corre en pausa / game over)
-  if (current) draw();
-  if (next) drawNext();
+  redraw();
 }
 
 themeBtn.addEventListener('click', () => {
   setTheme(theme === 'dark' ? 'light' : 'dark');
   themeBtn.blur(); // evita que Space/Enter vuelvan a activar el botón
 });
+
+function redraw() {
+  // redibujar (el bucle no corre en pausa / game over)
+  if (current) draw();
+  if (next) drawNext();
+}
+
+function setSkin(name) {
+  if (!SKINS[name]) name = 'retro';
+  skin = SKINS[name];
+  document.documentElement.dataset.skin = name;
+  skinSelect.value = name;
+  try { localStorage.setItem(SKIN_KEY, name); } catch (e) {}
+  redraw();
+}
+
+for (const [key, s] of Object.entries(SKINS)) {
+  skinSelect.add(new Option(s.label, key));
+}
+
+skinSelect.addEventListener('change', () => {
+  setSkin(skinSelect.value);
+  skinSelect.blur(); // las flechas vuelven a controlar el juego
+});
+
+let savedSkin = 'retro';
+try { savedSkin = localStorage.getItem(SKIN_KEY) || 'retro'; } catch (e) {}
+setSkin(savedSkin);
 
 let savedTheme = 'dark';
 try { savedTheme = localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) {}

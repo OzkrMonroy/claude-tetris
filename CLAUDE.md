@@ -27,6 +27,7 @@ Key points in `game.js` that span multiple functions:
 - **Collision is the single source of truth**: `collide(shape, ox, oy)` is used for movement, rotation wall kicks (`tryRotate` tries x offsets `0, -1, 1, -2, 2`), ghost projection (`ghostY`), gravity, and game-over detection in `spawn()`. Cells above the board (`ny < 0`) are allowed.
 - **Piece lifecycle**: gravity in `loop()` / `softDrop()` / `hardDrop()` → `lockPiece()` → `merge()` → `clearLines()` (updates score, level, `dropInterval`) → `spawn()` (promotes `next` to `current`, calls `endGame()` if it collides immediately).
 - **Timing**: `loop()` is `requestAnimationFrame`-driven; it accumulates `dt` in `dropAccum` and drops one row when it exceeds `dropInterval` (`max(100, 1000 - (level-1)*90)` ms). Pause/game-over stop it via `cancelAnimationFrame(animId)`; resume resets `lastTime` and calls `loop()` directly.
+- **Skins**: `SKINS` (retro/neon/pastel/pixel) each define `colors` (indexed like `COLORS`), `grid(theme)` and `drawBlock(ctx, px, py, size, color)`. The global `drawBlock()` delegates to the active `skin`; `setSkin()` swaps it, sets `data-skin` on `<html>` (CSS uses it for Neon's black canvas), persists to `localStorage` (`tetris-skin`) and calls `redraw()`. Adding a piece also means adding its color to every skin palette.
 - **Rendering**: `draw()` redraws everything each frame (grid → locked board → ghost at alpha 0.2 → current piece). The next-piece preview (`drawNext`) is only redrawn on `spawn()`, on a 4×4 grid of 30px cells.
 
 ## Coupled constants
