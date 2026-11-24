@@ -41,7 +41,11 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Vista previa** de la siguiente pieza.
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
-- **Pausa** y **Game Over** con opción de reinicio.
+- **Menú de pausa** (`P` / `Esc`): reanudar, reiniciar sin recargar, ver controles y elegir el **nivel inicial** (1–10, se guarda en `localStorage` y se aplica al reiniciar).
+- **Game Over** con opción de reinicio.
+- **Tema claro / oscuro** con botón en la esquina superior.
+- **Skins visuales** seleccionables (Retro, Neón, Pastel y Pixel art), que se recuerdan entre sesiones.
+- **Tabla de records local**: top 5 puntuaciones con nombre (guardadas en `localStorage`), mejor combo y líneas máximas históricas. Se muestra en la pantalla de inicio y en el Game Over; si tu puntuación entra en el top 5 se pide tu nombre y la fila se resalta. Botón **Borrar records** para reiniciarla.
 
 ---
 
@@ -84,7 +88,9 @@ Después abre `http://localhost:8000` en el navegador.
 | `↑` o `X` | Rotar la pieza en sentido horario |
 | `↓`       | Soft drop (bajar más rápido)      |
 | `Espacio` | Hard drop (caída instantánea)     |
-| `P`       | Pausar / reanudar                 |
+| `P` / `Esc` | Abrir / cerrar el menú de pausa |
+| `↑` / `↓` / `Tab` (en el menú) | Moverse entre las opciones del menú |
+| `←` / `→` (en el menú) | Cambiar el nivel inicial |
 
 ---
 
@@ -98,7 +104,8 @@ Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
 - Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
-- Un overlay para los estados **PAUSA** y **GAME OVER**.
+- Un overlay `#overlay` para **GAME OVER** (incluye la tabla de records y el campo de nombre) y otro `#pause-menu` para el menú de pausa (Reanudar, Reiniciar, Ver controles, Nivel inicial).
+- Una **pantalla de inicio** (`#start-screen`) con la tabla de records y el botón **Jugar**: la partida no empieza hasta pulsarlo.
 
 ### 2. `style.css`
 
@@ -115,12 +122,20 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Game loop** (`loop`): basado en `requestAnimationFrame`, acumula el tiempo transcurrido y baja la pieza una fila cuando se supera `dropInterval`.
 - **Limpieza de líneas** (`clearLines`): recorre el tablero de abajo hacia arriba; cada fila completa se elimina y se inserta una vacía en la cima.
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
-- **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
+- **Nivel y velocidad**: la partida empieza en el nivel inicial elegido en el menú de pausa; el nivel es el mayor entre ese nivel inicial y `líneas / 10 + 1` (con nivel inicial 1 sube cada 10 líneas; con nivel inicial 5 empieza a subir a partir de las 50 líneas); la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
+- **Skins** (`SKINS`): cada skin define su paleta (`colors`), el color de la rejilla, un fondo opcional y su propia función `drawBlock`. El selector **Skin** (junto al botón de tema) cambia la skin al instante, incluso en pausa, y la guarda en `localStorage` (`tetris-skin`):
+  - **Retro**: bloques cuadrados con colores planos (estilo clásico).
+  - **Neón**: fondo negro y bloques con brillo (_glow_).
+  - **Pastel**: colores suaves y bordes redondeados.
+  - **Pixel art**: textura de sub-píxeles con bordes claros y oscuros.
+- **Records** (sección `// ---- Records ----`): guarda en `localStorage` (clave `tetris-records`) el top 5, el mejor combo (piezas consecutivas que despejan líneas) y las líneas máximas. La lectura es defensiva: si los datos están corruptos se ignoran.
 
 ### Flujo del juego
 
 ```
+#start-screen → botón Jugar
+  ↓
 init()
   ├─ createBoard()                  → matriz vacía
   ├─ next = randomPiece()
@@ -136,7 +151,7 @@ init()
    keydown → mover / rotar / soft-drop / hard-drop / pausa
 ```
 
-Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over**.
+Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over** con la tabla de records (y el campo de nombre si la puntuación entra en el top 5).
 
 ---
 
@@ -173,9 +188,11 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `COLS`         | Columnas del tablero                     | `10`                  |
 | `ROWS`         | Filas del tablero                        | `20`                  |
 | `BLOCK`        | Tamaño en píxeles de cada celda          | `30`                  |
-| `COLORS`       | Paleta de colores por tipo de pieza      | 7 colores             |
+| `SKINS`        | Skins: colores por pieza, rejilla, fondo y forma de dibujar cada bloque | `retro`, `neon`, `pastel`, `pixel` |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
+
+> Para añadir una pieza nueva, agrégala a `PIECES` y añade su color al array `colors` de **cada** skin en `SKINS`.
 
 > Si cambias `COLS`, `ROWS` o `BLOCK`, recuerda ajustar también `width` y `height` del `<canvas id="board">` en `index.html` para que coincida (`COLS × BLOCK` × `ROWS × BLOCK`).
 
