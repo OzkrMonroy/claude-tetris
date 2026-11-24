@@ -42,6 +42,8 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
+- **Tema claro / oscuro** con botón en la esquina superior.
+- **Skins visuales** seleccionables (Retro, Neón, Pastel y Pixel art), que se recuerdan entre sesiones.
 
 ---
 
@@ -117,6 +119,11 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
 - **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
+- **Skins** (`SKINS`): cada skin define su paleta (`colors`), el color de la rejilla, un fondo opcional y su propia función `drawBlock`. El selector **Skin** (junto al botón de tema) cambia la skin al instante, incluso en pausa, y la guarda en `localStorage` (`tetris-skin`):
+  - **Retro**: bloques cuadrados con colores planos (estilo clásico).
+  - **Neón**: fondo negro y bloques con brillo (_glow_).
+  - **Pastel**: colores suaves y bordes redondeados.
+  - **Pixel art**: textura de sub-píxeles con bordes claros y oscuros.
 
 ### Flujo del juego
 
@@ -173,9 +180,11 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `COLS`         | Columnas del tablero                     | `10`                  |
 | `ROWS`         | Filas del tablero                        | `20`                  |
 | `BLOCK`        | Tamaño en píxeles de cada celda          | `30`                  |
-| `COLORS`       | Paleta de colores por tipo de pieza      | 7 colores             |
+| `SKINS`        | Skins: colores por pieza, rejilla, fondo y forma de dibujar cada bloque | `retro`, `neon`, `pastel`, `pixel` |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
+
+> Para añadir una pieza nueva, agrégala a `PIECES` y añade su color al array `colors` de **cada** skin en `SKINS`.
 
 > Si cambias `COLS`, `ROWS` o `BLOCK`, recuerda ajustar también `width` y `height` del `<canvas id="board">` en `index.html` para que coincida (`COLS × BLOCK` × `ROWS × BLOCK`).
 
