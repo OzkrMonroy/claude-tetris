@@ -7,7 +7,12 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <button id="theme-toggle" type="button" aria-label="Cambiar tema" aria-pressed="false">☀️ Claro</button>
+  <div class="top-controls">
+    <label class="skin-picker" for="skin-select">Skin
+      <select id="skin-select" aria-label="Skin visual de las piezas"></select>
+    </label>
+    <button id="theme-toggle" type="button" aria-label="Cambiar tema" aria-pressed="false">☀️ Claro</button>
+  </div>
   <div class="app">
   <h1 class="title">TETRIS</h1>
   <div class="wrapper">

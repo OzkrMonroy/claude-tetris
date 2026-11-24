@@ -202,9 +202,6 @@ kbd {
 
 /* ---- Toggle de tema ---- */
 #theme-toggle {
-  position: fixed;
-  top: 16px;
-  right: 16px;
   background: var(--canvas-bg);
   color: var(--text);
   border: 1px solid var(--border);
@@ -215,5 +212,39 @@ kbd {
 }
 
 #theme-toggle:hover {
+  border-color: var(--accent);
+}
+
+/* ---- Selector de skin ---- */
+.top-controls {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.skin-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#skin-select {
+  background: var(--canvas-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+#skin-select:hover,
+#skin-select:focus-visible {
   border-color: var(--accent);
 }
