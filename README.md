@@ -45,6 +45,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Game Over** con opción de reinicio.
 - **Tema claro / oscuro** con botón en la esquina superior.
 - **Skins visuales** seleccionables (Retro, Neón, Pastel y Pixel art), que se recuerdan entre sesiones.
+- **Tabla de records local**: top 5 puntuaciones con nombre (guardadas en `localStorage`), mejor combo y líneas máximas históricas. Se muestra en la pantalla de inicio y en el Game Over; si tu puntuación entra en el top 5 se pide tu nombre y la fila se resalta. Botón **Borrar records** para reiniciarla.
 
 ---
 
@@ -103,7 +104,8 @@ Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
 - Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
-- Un overlay `#overlay` para **GAME OVER** y otro `#pause-menu` para el menú de pausa (Reanudar, Reiniciar, Ver controles, Nivel inicial).
+- Un overlay `#overlay` para **GAME OVER** (incluye la tabla de records y el campo de nombre) y otro `#pause-menu` para el menú de pausa (Reanudar, Reiniciar, Ver controles, Nivel inicial).
+- Una **pantalla de inicio** (`#start-screen`) con la tabla de records y el botón **Jugar**: la partida no empieza hasta pulsarlo.
 
 ### 2. `style.css`
 
@@ -127,10 +129,13 @@ Contiene toda la lógica del juego. A grandes rasgos:
   - **Neón**: fondo negro y bloques con brillo (_glow_).
   - **Pastel**: colores suaves y bordes redondeados.
   - **Pixel art**: textura de sub-píxeles con bordes claros y oscuros.
+- **Records** (sección `// ---- Records ----`): guarda en `localStorage` (clave `tetris-records`) el top 5, el mejor combo (piezas consecutivas que despejan líneas) y las líneas máximas. La lectura es defensiva: si los datos están corruptos se ignoran.
 
 ### Flujo del juego
 
 ```
+#start-screen → botón Jugar
+  ↓
 init()
   ├─ createBoard()                  → matriz vacía
   ├─ next = randomPiece()
@@ -146,7 +151,7 @@ init()
    keydown → mover / rotar / soft-drop / hard-drop / pausa
 ```
 
-Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over**.
+Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over** con la tabla de records (y el campo de nombre si la puntuación entra en el top 5).
 
 ---
 

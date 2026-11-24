@@ -55,6 +55,19 @@
       <div class="overlay-box">
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
+        <div id="gameover-records" class="records hidden">
+          <p id="new-record-msg" class="new-record hidden"></p>
+          <form id="name-form" class="name-form hidden" autocomplete="off">
+            <input id="name-input" type="text" maxlength="12" placeholder="Tu nombre" aria-label="Nombre del jugador" />
+            <button type="submit" class="small-btn">Guardar</button>
+          </form>
+          <table class="records-table">
+            <thead><tr><th>#</th><th>Nombre</th><th>Puntos</th><th>Líneas</th><th>Nivel</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p class="records-stats"></p>
+          <button type="button" class="clear-records-btn small-btn danger">Borrar records</button>
+        </div>
         <button id="restart-btn">Reiniciar</button>
       </div>
     </div>
@@ -77,6 +90,22 @@
           <select id="pm-start-level"></select>
         </label>
         <p class="pm-hint">Se aplica al reiniciar (<kbd>←</kbd><kbd>→</kbd> para cambiar)</p>
+      </div>
+    </div>
+
+    <div id="start-screen" class="overlay">
+      <div class="overlay-box">
+        <p class="start-title">TETRIS</p>
+        <div class="records">
+          <span class="label">RECORDS</span>
+          <table class="records-table">
+            <thead><tr><th>#</th><th>Nombre</th><th>Puntos</th><th>Líneas</th><th>Nivel</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p class="records-stats"></p>
+          <button type="button" class="clear-records-btn small-btn danger">Borrar records</button>
+        </div>
+        <button id="play-btn">Jugar</button>
       </div>
     </div>
   </div>
