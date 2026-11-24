@@ -41,7 +41,8 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Vista previa** de la siguiente pieza.
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
-- **Pausa** y **Game Over** con opción de reinicio.
+- **Menú de pausa** (`P` / `Esc`): reanudar, reiniciar sin recargar, ver controles y elegir el **nivel inicial** (1–10, se guarda en `localStorage` y se aplica al reiniciar).
+- **Game Over** con opción de reinicio.
 - **Tema claro / oscuro** con botón en la esquina superior.
 - **Skins visuales** seleccionables (Retro, Neón, Pastel y Pixel art), que se recuerdan entre sesiones.
 
@@ -86,7 +87,9 @@ Después abre `http://localhost:8000` en el navegador.
 | `↑` o `X` | Rotar la pieza en sentido horario |
 | `↓`       | Soft drop (bajar más rápido)      |
 | `Espacio` | Hard drop (caída instantánea)     |
-| `P`       | Pausar / reanudar                 |
+| `P` / `Esc` | Abrir / cerrar el menú de pausa |
+| `↑` / `↓` / `Tab` (en el menú) | Moverse entre las opciones del menú |
+| `←` / `→` (en el menú) | Cambiar el nivel inicial |
 
 ---
 
@@ -100,7 +103,7 @@ Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
 - Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
-- Un overlay para los estados **PAUSA** y **GAME OVER**.
+- Un overlay `#overlay` para **GAME OVER** y otro `#pause-menu` para el menú de pausa (Reanudar, Reiniciar, Ver controles, Nivel inicial).
 
 ### 2. `style.css`
 
@@ -117,7 +120,7 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Game loop** (`loop`): basado en `requestAnimationFrame`, acumula el tiempo transcurrido y baja la pieza una fila cuando se supera `dropInterval`.
 - **Limpieza de líneas** (`clearLines`): recorre el tablero de abajo hacia arriba; cada fila completa se elimina y se inserta una vacía en la cima.
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
-- **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
+- **Nivel y velocidad**: la partida empieza en el nivel inicial elegido en el menú de pausa; el nivel es el mayor entre ese nivel inicial y `líneas / 10 + 1` (con nivel inicial 1 sube cada 10 líneas; con nivel inicial 5 empieza a subir a partir de las 50 líneas); la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
 - **Skins** (`SKINS`): cada skin define su paleta (`colors`), el color de la rejilla, un fondo opcional y su propia función `drawBlock`. El selector **Skin** (junto al botón de tema) cambia la skin al instante, incluso en pausa, y la guarda en `localStorage` (`tetris-skin`):
   - **Retro**: bloques cuadrados con colores planos (estilo clásico).

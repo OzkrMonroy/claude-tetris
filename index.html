@@ -45,7 +45,7 @@
             <li><kbd>↑</kbd> rotar</li>
             <li><kbd>↓</kbd> bajar</li>
             <li><kbd>Space</kbd> caída</li>
-            <li><kbd>P</kbd> pausa</li>
+            <li><kbd>P</kbd><kbd>Esc</kbd> pausa</li>
           </ul>
         </div>
       </aside>
@@ -56,6 +56,27 @@
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
         <button id="restart-btn">Reiniciar</button>
+      </div>
+    </div>
+
+    <div id="pause-menu" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <div class="pause-box">
+        <p id="pause-title">PAUSA</p>
+        <button type="button" class="menu-btn" id="pm-resume">Reanudar</button>
+        <button type="button" class="menu-btn" id="pm-restart">Reiniciar</button>
+        <button type="button" class="menu-btn" id="pm-controls" aria-expanded="false" aria-controls="pm-controls-panel">Ver controles</button>
+        <ul id="pm-controls-panel" class="pm-controls hidden">
+          <li><span><kbd>←</kbd><kbd>→</kbd></span> mover</li>
+          <li><span><kbd>↑</kbd> / <kbd>X</kbd></span> rotar</li>
+          <li><span><kbd>↓</kbd></span> bajar</li>
+          <li><span><kbd>Space</kbd></span> caída</li>
+          <li><span><kbd>P</kbd> / <kbd>Esc</kbd></span> pausa / menú</li>
+        </ul>
+        <label class="pm-level" for="pm-start-level">
+          <span>Nivel inicial</span>
+          <select id="pm-start-level"></select>
+        </label>
+        <p class="pm-hint">Se aplica al reiniciar (<kbd>←</kbd><kbd>→</kbd> para cambiar)</p>
       </div>
     </div>
   </div>
